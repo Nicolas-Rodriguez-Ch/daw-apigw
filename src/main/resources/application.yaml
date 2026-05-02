@@ -1,3 +1,60 @@
 spring:
   application:
     name: apigw
+  cloud:
+    gateway:
+      discovery:
+        locator:
+          enabled: false
+      routes:
+        - id: ms-operations
+          uri: lb://ms-operations
+          predicates:
+            - Path=/ms-operations/**
+          filters:
+            - StripPrefix=1
+        - id: ms-vehicles
+          uri: lb://ms-vehicles
+          predicates:
+            - Path=/ms-vehicles/**
+          filters:
+            - StripPrefix=1
+      server:
+        webflux:
+          routes:
+            - id: ms-operations-route-webflux
+              uri: lb://ms-operations
+              predicates:
+                - Path=/ms-operations/**
+              filters:
+                - StripPrefix=1
+            - id: ms-vehicles-route-webflux
+              uri: lb://ms-vehicles
+              predicates:
+                - Path=/ms-vehicles/**
+              filters:
+                - StripPrefix=1
+eureka:
+  client:
+    registerWithEureka: true
+    fetchRegistry: true
+    service-url:
+      defaultZone: ${eureka_url:http://localhost:8761/eureka}
+  instance:
+    prefer-ip-address: true
+    hostname: ${EUREKA_HOST:localhost}
+
+server:
+  port: 8762
+
+management:
+  endpoint:
+    gateway:
+      enabled: true
+  endpoints:
+    web:
+      exposure:
+        include:
+          - health
+          - info
+          - gateway
